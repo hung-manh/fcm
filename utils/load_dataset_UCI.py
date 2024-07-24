@@ -5,6 +5,32 @@ from urllib import request, parse, error
 import certifi
 import ssl
 
+TEST_CASES = {
+    53: {
+        'name': 'Iris',
+        'n_cluster': 3,
+        'test_points': [5.1, 3.5, 1.4, 0.2]
+    },
+    109: {
+        'name': 'Wine',
+        'n_cluster': 4,
+        'test_points': [14.23, 1.71, 2.43, 15.6,
+                        127, 2.80, 3.06, 0.28,
+                        2.29, 5.64, 1.04, 3.92,
+                        1065]
+    },
+    602: {
+        'name': 'DryBean',
+        'n_cluster': 7,
+        'test_points': [
+            28395, 610.291, 208.178117, 173.888747,
+            1.197191, 0.549812, 28715, 190.141097,
+            0.763923, 0.988856, 0.958027, 0.913358,
+            0.007332, 0.003147, 0.834222, 0.998724]
+    }
+}
+
+
 def load_dataset(data: dict, file_csv: str = ''):
     # # label_name = data['data']['target_col']
     # print('uci_id=', data['data']['uci_id'])  # Mã bộ dữ liệu
