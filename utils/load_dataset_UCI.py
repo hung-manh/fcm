@@ -32,7 +32,7 @@ def fetch_data_from_uci(name_or_id=53) -> dict:
         api_url += '?id=' + str(name_or_id)
     try:
         response = request.urlopen(api_url, context=ssl.create_default_context(cafile=certifi.where()))
-        return {'X': load_dataset(data=json.load(response), file_csv='./Dry_Bean.csv')}
+        return {'X': load_dataset(data=json.load(response), file_csv='./data/csv/Dry_Bean.csv')}
     except (error.URLError, error.HTTPError):
         raise ConnectionError('Error connecting to server')
     
