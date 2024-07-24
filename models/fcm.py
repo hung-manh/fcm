@@ -33,6 +33,8 @@ class Dfcm:
     
     # Cập nhật ma trận thành viên, ma trận độ thuộc 
     def __update_membership_matrix(self, distances: np.ndarray) -> np.ndarray:
+        epsilon = 1e-10  # small constant to prevent division by zero
+        distances = np.maximum(distances, epsilon)  # avoid zero distances
         U = distances[:, :, None] * (1 / distances)[:, None, :]
         U = (U ** (2 / (self._m - 1))).sum(axis=2)
         return 1 / U # d_ik^(-2/(m-1)) / Σ(d_ik^(-2/(m-1)))
@@ -53,7 +55,8 @@ class Dfcm:
             # if np.linalg.norm(u - old_u) < self._epsilon:
             if (np.abs(u - old_u)).max(axis=(0, 1)) < self._epsilon:
                 break
-        labels = np.argmax(u, axis=1)
-        clusters = [data[labels == i] for i in range(self.C)]
-        # Trả về ma trận độ thuộc, ma trận tâm cụm, số bước lặp, nhãn cụm, danh sách cụm
-        return u, v, step + 1, labels, clusters
+        # labels = np.argmax(u, axis=1)
+        # clusters = [data[labels == i] for i in range(self.C)]
+        # # Trả về ma trận độ thuộc, ma trận tâm cụm, số bước lặp, nhãn cụm, danh sách cụm
+        # return u, v, step + 1, labels, clusters
+        return u, v, step + 1
