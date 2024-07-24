@@ -40,7 +40,7 @@ class Dfcm:
         # return 1 / ((distances[:, :, np.newaxis] / distances[:, np.newaxis, :]) ** power).sum(axis=2)
 
     # Fuzzy C-means algorithm
-    def cmeans(self, data: np.ndarray, C: int = 7, seed: int = 42) -> tuple:
+    def cmeans(self, data: np.ndarray, C: int, seed: int = 42) -> tuple:
         u = self.__init_membership(len(data), C, seed)
         for step in range(self._maxiter):
             old_u = u.copy()
