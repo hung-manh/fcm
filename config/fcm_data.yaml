@@ -1,0 +1,3 @@
+maxiter: 10000000
+img_path: 'data/images/k1_1024x1024.tif'
+c_value: 3

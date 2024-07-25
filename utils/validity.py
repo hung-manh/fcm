@@ -4,69 +4,47 @@ import numpy as np
 # 1.1 Chỉ số đo lường mức độ tách biệt giữa các cụm
 ## 1.1.1 Chỉ số Dunn (DI)
 def dunn_index(clusters:np.ndarray)->float:
-    # """
-    # Args:
-    # clusters: Danh sách các cụm, mỗi cụm là một danh sách các điểm dữ liệu.
-    # Giá trị trả về: Chỉ số Dunn, càng cao càng tốt, càng thể hiện độ tách biệt giữa các cụm.
-    # """
-    # # Tính khoảng cách giữa các cụm
-    # ds = []
-    # for i in range(len(clusters)):
-    #     for j in range(i+1,len(clusters)):
-    #         ds.append(np.min(np.linalg.norm(clusters[i][:,np.newaxis]-clusters[j],axis=2)))
-    # # Tính đường kính của mỗi cụm
-    # diams = []
-    # for cluster in clusters:
-    #     diams.append(np.max(np.linalg.norm(cluster[:,np.newaxis]-cluster,axis=2)))
-    # return np.min(ds) / np.max(diams)
     """
-    Calculate the Dunn Index for a set of clusters.
-    
     Args:
-    clusters: List of clusters, where each cluster is a numpy array of data points.
-    
-    Returns:
-    float: Dunn Index. Higher values indicate better clustering.
+    clusters: Danh sách các cụm, mỗi cụm là một danh sách các điểm dữ liệu.
+    Giá trị trả về: Chỉ số Dunn, càng cao càng tốt, càng thể hiện độ tách biệt giữa các cụm.
     """
-    n_clusters = len(clusters)
-    
-    # Calculate inter-cluster distances
-    min_inter_cluster_distances = np.inf
-    for i in range(n_clusters):
-        for j in range(i+1, n_clusters):
-            dist = np.min(np.linalg.norm(clusters[i][:, np.newaxis] - clusters[j], axis=1))
-            min_inter_cluster_distances = min(min_inter_cluster_distances, dist)
-    
-    # Calculate cluster diameters
-    max_cluster_diameter = 0
+    # Tính khoảng cách giữa các cụm
+    ds = []
+    for i in range(len(clusters)):
+        for j in range(i+1,len(clusters)):
+            ds.append(np.min(np.linalg.norm(clusters[i][:,np.newaxis]-clusters[j],axis=2)))
+    # Tính đường kính của mỗi cụm
+    diams = []
     for cluster in clusters:
-        diameter = np.max(np.linalg.norm(cluster[:, np.newaxis] - cluster, axis=1))
-        max_cluster_diameter = max(max_cluster_diameter, diameter)
-    
-    return min_inter_cluster_distances / max_cluster_diameter
+        diams.append(np.max(np.linalg.norm(cluster[:,np.newaxis]-cluster,axis=2)))
+    return np.min(ds) / np.max(diams)
 
-## 1.1.2 Chỉ số Davies-Bouldin (DBI)
-def davies_bouldin_index(clusters:np.ndarray,centroids:np.ndarray) -> float:
+def davies_bouldin_index(clusters, centroids) -> float:
     """
     Args:
     clusters: Danh sách các cụm, mỗi cụm là một danh sách các điểm dữ liệu.
     centroids: Danh sách các tâm cụm.
     """
-    # Tính độ lệch chuẩn của mỗi cụm
-    stds = [np.std(cluster, axis=0) for cluster in clusters]
+    k = len(clusters)
+    #  average distance of all points in the cluster to the centroid of that cluster. 
+    dispersions = [np.mean([np.linalg.norm(point - centroids[i]) for point in cluster]) for i, cluster in enumerate(clusters)]
+        
     # Tính khoảng cách giữa các tâm cụm
     distances = np.linalg.norm(centroids[:, np.newaxis] - centroids, axis=2)
+    
     # Tính Davies-Bouldin’s index
-    davies_bouldin_index = 0
-    for i in range(len(clusters)):
+    db_index = 0
+    for i in range(k):
         max_ratio = 0
-        for j in range(len(clusters)):
+        for j in range(k):
             if i != j:
-                ratio = (stds[i] + stds[j]) / distances[i, j]
+                ratio = (dispersions[i] + dispersions[j]) / distances[i, j]
                 if ratio > max_ratio:
                     max_ratio = ratio
-    davies_bouldin_index += max_ratio
-    return davies_bouldin_index / len(clusters)
+        db_index += max_ratio
+    
+    return db_index / k
 
 ## 1.1.3 Chỉ số tách biệt Separation (SI)
 def separation_index(clusters:np.ndarray,centroids:np.ndarray)->float:

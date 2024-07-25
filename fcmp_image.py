@@ -6,7 +6,7 @@ from utils.validity import (separation_index,
                            classification_entropy,
                            fuzzy_hypervolume,
                            cs_index) 
-from utils.load_image2data import image2data
+from utils.image_data_utils import image2data
 
 if __name__ == "__main__":
     import time

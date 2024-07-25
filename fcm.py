@@ -2,11 +2,15 @@ import time
 from models.fcm import Dfcm 
 from utils.utils import *
 from utils.load_dataset_UCI import fetch_data_from_uci, TEST_CASES
-from utils.validity import (separation_index,
+from utils.validity import (dunn_index,
+                            davies_bouldin_index,
+                            separation_index,
                            partition_coefficient,
                            classification_entropy,
                            fuzzy_hypervolume,
                            cs_index) 
+# --------------------------------Sklearn--------------------------------
+from sklearn.metrics import davies_bouldin_score as dbs
 
 if __name__ == "__main__":
     import time
@@ -28,17 +32,26 @@ if __name__ == "__main__":
         # --------------------------------
         print("Thời gian tính toán", round_float(time.time() - _start_time))
         print("Số bước lặp:", step)
-        print("Ma trận độ thuộc U:", len(U), U[:1], '...')
-        print("Ma tran tâm cụm V:", len(V), V[:1], '...') 
+        # print("Ma trận độ thuộc U:", len(U), U[:1], '...')
+        # print("Ma tran tâm cụm V:", len(V), V[:1], '...') 
+        
+        
         # 1.1
-        # print("Chỉ số Dunn:", dunn_index(clusters))
-        # print("Chỉ số Davies-Bouldin:", davies_bouldin_index(clusters, V))
+        print("Chỉ số Dunn:", dunn_index(clusters))
+        
+        print("Chỉ số Davies-Bouldin:", davies_bouldin_index(clusters, V))
+        # print("Chỉ số Davies-Bouldin Sklearn:", dbs(_dt['X'], labels))
+        
         print("Chỉ số SI:", separation_index(clusters, V))
+        
+        
         # 1.2
         print("Chỉ số PCI:", partition_coefficient(U))
-        # 1.3
+        
+        
+        # # 1.3
         print("Chỉ số CEI:", classification_entropy(labels))
-        # 1.4 chưa cài được 
+        # # 1.4 chưa cài được 
         
         # 1.5
         print("Chỉ số FPC:", partition_coefficient(U))
