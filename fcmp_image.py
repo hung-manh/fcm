@@ -1,43 +1,70 @@
+import yaml
 import time
 from models.fcm_parallel import Dfcm_parallel
 from utils.utils import *
-from utils.validity import (separation_index,
-                           partition_coefficient,
-                           classification_entropy,
-                           fuzzy_hypervolume,
-                           cs_index) 
-from utils.image_data_utils import image2data
+from utils.validity import *
+from utils.image_data_utils import image2data, data2image
+
+
+def load_config(config_path):
+    with open(config_path, 'r') as file:
+        return yaml.safe_load(file)
+
 
 if __name__ == "__main__":
-    import time
-    _start_time = time.time()
-    MAX_ITER = 10000000  # 000
-    img_path = 'data/images/k1_1024x1024.tif'
-    data = image2data(img_path) 
-    print("Thời gian lấy dữ liệu:", round_float(time.time() - _start_time))
-    print("Kích thước ảnh:", data.shape)
-    # --------------------------------
-    _start_time = time.time()
-    dfcmp = Dfcm_parallel()
-    U, V, step = dfcmp.parallel_cmeans(data= data,  C= 3, maxiter=MAX_ITER)
+    # ------------------------------------------
+    config = load_config('config/fcmp_image.yaml')
+    maxiter = config['maxiter']
+    n_clusters = config['n_clusters']
+    m = config['m']
+    epsilon = config['epsilon']
+    seed = config['seed']
+    num_processes = config['num_processes']
+    input_image_path = config['input_image_path']
     
-    # --------------------------------
-    print("Thời gian tính toán", round_float(time.time() - _start_time))
-    # print("Số bước lặp:", step)
-    print("Ma trận độ thuộc U:", len(U), U[:1], '...')
-    print("Ma tran tâm cụm V:", len(V), V[:1], '...') 
-    # # 1.1
-    # # print("Chỉ số Dunn:", dunn_index(clusters))
-    # # print("Chỉ số Davies-Bouldin:", davies_bouldin_index(clusters, V))
-    # # print("Chỉ số SI:", separation_index(clusters, V))
-    # # 1.2
-    print("Chỉ số PCI:", partition_coefficient(U))
-    # # 1.3
-    # print("Chỉ số CEI:", classification_entropy(labels))
-    # # 1.4 chưa cài được 
+    # ------------------------------------------
+    start_time = time.time()
+    data = image2data(input_image_path)
+    if config['debug']['print_time']:
+        print("Thời gian lấy dữ liệu:", round_float(time.time() - start_time))
+    if config['debug']['print_image_size']:
+        print("Kích thước ảnh:", data.shape)
     
-    # # 1.5
-    # print("Chỉ số FPC:", partition_coefficient(U))
-    # print("Chỉ số FH:", fuzzy_hypervolume(U))
-    # print("Chỉ số CS:", cs_index(clusters, V))
-    # # --------------------------------
+    # ------------------------------------------
+    _start_time = time.time()
+    dfcmp = Dfcm_parallel(num_processes)
+    U, V = dfcmp.parallel_cmeans(data, n_clusters, m, epsilon, maxiter, seed)
+    labels = extract_labels(U)
+    clusters = extract_clusters(data, labels, n_clusters)
+    
+    # ------------------------------------------
+    if config['debug']['print_time']:
+        print("Thời gian tính toán", round_float(time.time() - _start_time))
+    # if config['debug']['print_steps']:
+    #     print("Số bước lặp:", step)
+    if config['debug']['print_U']:
+        print("Ma trận độ thuộc U:", len(U), U[:1], '...')
+    if config['debug']['print_V']:
+        print("Ma tran tâm cụm V:", len(V), V[:1], '...')
+
+    # ------------------------------------------
+    data2image(labels, clusters, config['output_image_path'])
+    
+    # ------------------------------------------
+    # Tính toán các chỉ số đánh giá dựa trên cấu hình
+    if config['validity_indices']['dunn_index']:
+        print("Chỉ số Dunn:", dunn_index(clusters))
+    if config['validity_indices']['davies_bouldin_index']:
+        print("Chỉ số Davies-Bouldin:", davies_bouldin_index(clusters, V))
+    if config['validity_indices']['davies_bouldin_index_sckitlearn']:
+        print("Chỉ số Davies-Bouldin scikit-learn:", davies_bouldin_index_sckitlearn(data, labels))
+    if config['validity_indices']['separation_index']:
+        print("Chỉ số SI:", separation_index(clusters, V))
+    if config['validity_indices']['partition_coefficient']:
+        print("Chỉ số PCI:", partition_coefficient(U))
+    if config['validity_indices']['classification_entropy']:
+        print("Chỉ số CEI:", classification_entropy(labels))
+    if config['validity_indices']['fuzzy_hypervolume']:
+        print("Chỉ số Fuzzy Hypervolume:", fuzzy_hypervolume(V))
+    if config['validity_indices']['cs_index']:
+        print("Chỉ số CS:", cs_index(clusters, V))
