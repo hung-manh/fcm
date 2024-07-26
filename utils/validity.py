@@ -126,4 +126,7 @@ def cs_index(clusters: np.ndarray, centroids: np.ndarray) -> float:
             if i != j:
                 result += (stds[i] + stds[j]) / distances[i, j]
     return result
-
+# ---------------------------Sklearn---------------------------
+def davies_bouldin_index_sckitlearn(X, labels):
+    from sklearn.metrics import davies_bouldin_score
+    return davies_bouldin_score(X, labels)
