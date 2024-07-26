@@ -4,21 +4,28 @@ import rasterio
 from PIL import Image
 
 
-def image2data(imgpath: str) -> np.ndarray:
+def image2data(imgpath: str) -> tuple:
     if not os.path.isfile(imgpath):
         print(f'Duong dan anh {imgpath} khong ton tai')
         return None
     with rasterio.open(imgpath) as dataset:
         image_data = dataset.read()
 
+    # Check the number of bands
+        if image_data.shape[0] == 1:
+            # The image is already in grayscale
+            image_data = image_data
+        else:
+            # Convert to grayscale by averaging the bands
+            image_data = np.mean(image_data, axis=0, keepdims=True)
+
     data = image_data.reshape((image_data.shape[1] * image_data.shape[2], image_data.shape[0]))
     data = data - np.min(data, axis=0)
-    return data / np.max(data, axis=0)
+    return data / np.max(data, axis=0), image_data.shape
 
 
-def data2image(labels: np.ndarray, clusters: tuple, output_path: str) -> None:
-    out_shape = (1024, 1024)
-    segmented_image = labels.reshape(out_shape)
+def data2image(labels: np.ndarray, clusters: tuple, out_shape: tuple, output_path: str) -> None:
+    segmented_image = labels.reshape(out_shape[1:])
     
     # Khai báo một bảng màu cho các cụm
     color_palette = np.array([

@@ -20,14 +20,15 @@ if __name__ == "__main__":
     epsilon = config['epsilon']
     seed = config['seed']
     input_image_path = config['input_image_path']
-    
+    output_image_path = config['output_image_path']
     # ------------------------------------------
     start_time = time.time()
-    data = image2data(input_image_path)
+    data, image_data_shape = image2data(input_image_path)
     if config['debug']['print_time']:
         print("Thời gian lấy dữ liệu:", round_float(time.time() - start_time))
     if config['debug']['print_image_size']:
-        print("Kích thước ảnh:", data.shape)
+        print("Kích thước ảnh gốc:", image_data_shape)
+        print("Kích thước ảnh cần xử lý:", data.shape)
     
     # ------------------------------------------
     _start_time = time.time()
@@ -47,7 +48,7 @@ if __name__ == "__main__":
         print("Ma tran tâm cụm V:", len(V), V[:1], '...')
 
     # ------------------------------------------
-    data2image(labels, clusters, config['output_image_path'])
+    data2image(labels, clusters, image_data_shape, output_image_path)
     
     # ------------------------------------------
     # Tính toán các chỉ số đánh giá dựa trên cấu hình
