@@ -1,13 +1,13 @@
 # General settings
 maxiter: 10000
-n_clusters: 3
+n_clusters: 2
 m: 2
 epsilon: 0.00001
 seed: 42
 num_processes: 4
 
 # Input/Output
-input_image_path: 'data/images/k1_1024x1024.tif'
+input_image_path: 'data/images/Ha Noi.tif'
 output_image_path: 'outputs/segmented_image.tif'
 
 # Validity indices to calculate

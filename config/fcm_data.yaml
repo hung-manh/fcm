@@ -21,5 +21,5 @@ debug:
   print_time: true
   print_image_size: true
   print_steps: true
-  print_U: true
-  print_V: true
+  print_U: false
+  print_V: false

@@ -1,6 +1,7 @@
 import numpy as np 
 from multiprocessing import Pool, cpu_count
 from .fcm import Dfcm
+from utils.utils import *
 
 
 class Dfcm_parallel:
@@ -23,6 +24,16 @@ class Dfcm_parallel:
         all_u = np.concatenate([results[0] for results in results], axis=0)
         all_v = fcm.update_cluster_centers(data, all_u)            
         return all_u, all_v
+
+        
+        # labels = []
+        # all_u = []
+        # for result in results:
+        #     all_u.extend(result[0])
+        #     labels.extend(extract_labels(np.array(result[0])))
+        # all_v = fcm.update_cluster_centers(data, np.array(all_u))
+        # return np.array(all_u), np.array(all_v), np.array(labels)
+
         
             
         
