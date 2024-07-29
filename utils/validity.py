@@ -8,114 +8,196 @@ def dunn_index(clusters:np.ndarray)->float:
     Args:
     clusters: Danh sách các cụm, mỗi cụm là một danh sách các điểm dữ liệu.
     Giá trị trả về: Chỉ số Dunn, càng cao càng tốt, càng thể hiện độ tách biệt giữa các cụm.
+    
+    Chỉ số DI đo lường khoảng cách tối thiểu giữa các cụm so với khoảng cách tối đa trong mỗi cụm. Giá
+    trị DI càng cao phản ánh chất lượng phân cụm tốt hơn, độ tách biệt cao (khoảng cách giữa các cụm lớn
+    và kích thước các cụm nhỏ). Thường sử dụng DI để tìm tham số C với cùng dữ liệu, cùng thuật toán
+    hoặc để so sánh các thuật toán phân cụm khác nhau. Lưu ý DI có thể nhạy cảm với nhiễu và các điểm
+    ngoại lai.
     """
+    n_clusters = len(clusters)
+    
     # Tính khoảng cách giữa các cụm
-    ds = []
-    for i in range(len(clusters)):
-        for j in range(i+1,len(clusters)):
-            ds.append(np.min(np.linalg.norm(clusters[i][:,np.newaxis]-clusters[j],axis=2)))
+    min_distances = np.zeros((n_clusters, n_clusters))
+    for i in range(n_clusters):
+        for j in range(i+1, n_clusters):
+            distances = np.linalg.norm(clusters[i][:, np.newaxis] - clusters[j], axis=2)
+            min_distances[i, j] = min_distances[j, i] = np.min(distances)
+    
     # Tính đường kính của mỗi cụm
-    diams = []
-    for cluster in clusters:
-        diams.append(np.max(np.linalg.norm(cluster[:,np.newaxis]-cluster,axis=2)))
-    return np.min(ds) / np.max(diams)
+    diameters = np.array([
+        np.max(np.linalg.norm(cluster[:, np.newaxis] - cluster, axis=2))
+        for cluster in clusters
+    ])
+    
+    return np.min(min_distances[min_distances > 0])  / np.max(diameters)
 
-def davies_bouldin_index(clusters, centroids) -> float:
+def davies_bouldin_index(data:np.ndarray, labels:np.ndarray) -> float:
     """
-    Args:
-    clusters: Danh sách các cụm, mỗi cụm là một danh sách các điểm dữ liệu.
-    centroids: Danh sách các tâm cụm.
+    Chỉ số DB đo lường mức độ chồng chéo giữa các cụm, giá trị càng thấp càng tốt. DB thấp phản ánh
+    chất lượng phân cụm tốt hơn (các cụm được phân tách rõ ràng hơn), độ tương đồng nơi cụm thấp (các
+    điểm trong cùng một cụm tập trung chặt chẽ quanh tâm cụm), độ tách biệt giữa các cụm cao (các cụm
+    cách xa nhau), sự đồng nhất giữa các cụm (các cụm có kích thước và mật độ tương đối đồng đều) và số
+    lượng cụm phù hợp (chọn số lượng cụm tối ưu cho bộ dữ liệu). Thường sử dụng DB để tìm tham số C
+    cho thuật toán phân cụm (so sánh các kết quả phân cụm khác nhau với cùng dữ liệu, cùng thuật toán
+    nhưng truyền vào số cụm khác nhau)
     """
-    k = len(clusters)
-    #  average distance of all points in the cluster to the centroid of that cluster. 
-    dispersions = [np.mean([np.linalg.norm(point - centroids[i]) for point in cluster]) for i, cluster in enumerate(clusters)]
+    # C = len(np.unique(labels))
+    # V = np.array([data[labels == i].mean(axis=0) for i in range(C)])
+
+    # #  Tính độ lệch chuẩn cho mỗi cụm 
+    # d = [np.mean(np.linalg.norm(data[labels==i], V[i], axis=1)) for i in range(C)]
         
-    # Tính khoảng cách giữa các tâm cụm
-    distances = np.linalg.norm(centroids[:, np.newaxis] - centroids, axis=2)
-    
-    # Tính Davies-Bouldin’s index
-    db_index = 0
-    for i in range(k):
-        max_ratio = 0
-        for j in range(k):
-            if i != j:
-                ratio = (dispersions[i] + dispersions[j]) / distances[i, j]
-                if ratio > max_ratio:
-                    max_ratio = ratio
-        db_index += max_ratio
-    
-    return db_index / k
+    # # Tính Davies-Bouldin’s index
+    # result = 0
+    # for i in range(C):
+    #     max_ratio = 0
+    #     for j in range(C):
+    #         if i != j:
+    #             ratio = (d[i] + d[j]) / np.linalg.norm[V[i], V[j]]
+    #             max_ratio = max(max_ratio, ratio)
+    #     result += max_ratio
+    # return result / C
 
-## 1.1.3 Chỉ số tách biệt Separation (SI)
-def separation_index(clusters:np.ndarray,centroids:np.ndarray)->float:
+    from sklearn.metrics import davies_bouldin_score
+    return davies_bouldin_score(data, labels)
+
+
+## 1.1.3 Chỉ số tách biệt Separation (S)
+def separation_index(data:np.ndarray, membership:np.ndarray, centers:np.ndarray, m:float=2)->float:
     """
-    Args:
-    clusters: Danh sách các cụm, mỗi cụm là một danh sách các điểm dữ liệu.
-    centroids: Danh sách các tâm cụm.
+    Chỉ số S áp dụng cho phân cụm mờ, đo lường mức độ tách biệt giữa các cụm. S ∈ (0, ∞), giá trị càng
+    thấp càng tốt, cho thấy các cụm được phân tách rõ ràng hơn. Nên được sử dụng kèm với PC, CE, thường
+    được sử dụng để điều chỉnh số cụm tối ưu cho bộ dữ liệu.
     """
-    # Tính khoảng cách giữa các tâm cụm
-    distances = np.linalg.norm(centroids[:, np.newaxis] - centroids, axis=2)
-    # Tính đường kính của mỗi cụm
-    diams = []
-    for cluster in clusters:
-        diams.append(np.max(np.linalg.norm(cluster[:, np.newaxis] - cluster, axis=2)))
-    return np.min(distances) / np.max(diams)
+    _N, C = membership.shape
+    _ut = membership.T
+    numerator = 0
+    for i in range(C):
+        diff = data - centers[i]
+        squared_diff = np.sum(diff**2, axis=1)
+        numerator += np.sum((_ut[i] ** m) * squared_diff)
+    center_dists = np.sum((centers[:, np.newaxis] - centers) ** 2, axis=2)
+    np.fill_diagonal(center_dists, np.inf)
+    min_center_dist = np.min(center_dists)
+    return numerator / min_center_dist
+
 
 ## 1.1.4 Chỉ số Calinski-Harabasz (CH)
+def calinski_harabasz_index(data:np.ndarray,labels:np.ndarray)->float:
+    """
+    Chỉ số CH đo lường mức độ phân biệt giữa các cụm so với mức độ phân tán trong mỗi cụm, giá trị
+    càng cao, độ hợp lệ của phân cụm càng tốt.
+    """
+    N = len(data)
+    C = len(np.unique(labels))
+    
+    overall_mean = np.mean(data, axis=0)
+    
+    # Tính tổng phương sai
+    within_var = 0
+    for i in range(C):
+        cluster_i = data[labels == i]
+        cluster_mean = np.mean(cluster_i, axis=0)
+        within_var += np.sum((cluster_i - cluster_mean) ** 2)
+    
+    # Tính phương sai giữa các cụm
+    between_var = 0
+    for i in range(C):
+        cluster_i = data[labels == i]
+        ni = len(cluster_i)
+        cluster_mean = np.mean(cluster_i, axis=0)
+        between_var += ni * np.sum((cluster_mean - overall_mean) ** 2)
+                         
+    # Tính phương sai trong cụm
+    if N == C or C == 1:
+        return 0
+    return (between_var / (C - 1)) / (within_var / (N - C))
+
+
+## 1.1.5 Chỉ số Silhouette
+def silhouette_index(data:np.ndarray,labels:np.ndarray)->float:
+    """
+    Chỉ số SI đo lường mức độ tương tự của một điểm dữ liệu với cụm nó được gán vào so với các cụm
+    khác. SI ∈ [−1, 1], SI càng gần 1, độ độ hợp lệ của phân cụm càng tốt
+    """
+    # N = len(data)
+    # silhouette_vals = np.zeros(N)
+    # for i in range(N):
+    #     a_i = 0
+    #     b_i = np.inf
+    #     for j in range(N):
+    #         if i != j:
+    #             distance = np.sqrt(np.sum((data[i] - data[j])**2))
+    #         if labels[i] == labels[j]:
+    #             a_i += distance
+    #     else:
+    #         b_i = min(b_i, distance)
+            
+    #     if np.sum(labels == labels[i]) > 1:
+    #         a_i /= (np.sum(labels == labels[i]) - 1)
+    #     else:
+    #         a_i = 0
+    #     silhouette_vals[i] = (b_i - a_i) / max(a_i, b_i)
+    # return np.mean(silhouette_vals)
+    from sklearn.metrics import silhouette_score
+    return silhouette_score(data, labels)
 
 # 1.2 Chỉ số đo lường mức độ rõ ràng của các cụm
 ## 1.2.1 Hệ số phân vùng Partition Coefficient (PCI), Giống hệt chỉ số FPC
 def partition_coefficient(membership:np.ndarray)->float: # Fuzzy Partition Coefficient
     """
-    Args:
-    membership: Ma trận độ thuộc, mỗi hàng là 1 điểm, mỗi cột là 1 cụm.
-    Càng gần 1 càng tốt
+    Chỉ số PC đo lường mức độ rõ ràng của các cụm, giá trị càng cao, độ hợp lệ của phân cụm càng tốt.
+    Chỉ số PC phù hợp với thuật toán phân cụm mờ, không phản ánh sự tách biệt giữa các cụm.
     """
     return np.sum(np.square(membership)) / membership.shape[0]
     # return np.trace(np.dot(membership.T, membership)) / membership.shape[0]
     
-# 1.3 Entropy phân loại Classification Entropy (CEI)
-def classification_entropy(labels: np.ndarray) -> float:
+    
+## 1.2.2 Entropy phân loại Classification Entropy (CEI)
+def classification_entropy(membership:np.ndarray,a:float=np.e)->float:
     """
-    Args:
-    labels: Danh sách nhãn của các điểm dữ liệu.
+    CE đo lường mức độ không chắc chắn trong việc gán điểm vào các cụm, giá trị càng thấp, độ hợp lệ
+    của phân cụm càng tốt. CE thường kết hợp với PC, một phân cụm tốt thường có PC cao và CE thấp,
+    0 ≤ 1 − P C ≤ CE
     """
+    N = membership.shape[0]
+    
+    # Tránh log(0) bằng cách thêm một epsilon nhỏ cho tất cả các phần tử
+    epsilon = np.finfo(float).eps
+    membership = np.clip(membership, epsilon, 1)
+    
     # Tính tỉ lệ phần trăm điểm dữ liệu thuộc về mỗi cụm
-    _unique_labels, counts = np.unique(labels, return_counts=True)
-    proportions = counts / len(labels)
-    return - np.sum(proportions * np.log2(proportions))
+    log_u = np.log(membership) / np.log(a) # Chuyển đổi cơ số logarit
+    return -np.sum(membership * log_u) / N
 
-# 1.4 Chỉ số đo lường mức độ tương tự của các điểm dữ liệu với cụm
-# 1.4.1 Chỉ số Silhouette
 
-# 1.5 Các chỉ số khác
-# 1.5.1 Fuzzy Partition Coefficient (FPC)
-def partition_coefficient(membership:np.ndarray)->float: # Fuzzy Partition Coefficient
+# 1.3 Các chỉ số khác
+## 1.3.1 Thể tích mờ Fuzzy Hypervolume (FH)
+def fuzzy_hypervolume(membership:np.ndarray, m:float=2)->float:
     """
     Args:
-    membership: Ma trận độ thuộc, mỗi hàng là 1 điểm, mỗi cột là 1 cụm.
-    Càng gần 1 càng tốt
+    FHV đo lường thể tích của các cụm trong không gian mờ. FHV phù hợp với thuật toán phân cụm
+    mờ, không phản ánh sự tách biệt giữa các cụm. F HV ∈ (0, 1], giá trị càng cao, độ hợp lệ của phân cụm
+    càng tốt.
     """
-    # return np.sum(np.square(membership)) / membership.shape[0]
-    return np.trace(np.dot(membership.T, membership)) / membership.shape[0]
+    C = membership.shape[1]
+    fhv = 0
+    for i in range(C):
+        cluster_u = membership[:, i]
+        n_i = np.sum(cluster_u > 0)
+        if n_i > 0:
+            fhv += np.sum(cluster_u ** m) / n_i
+    return fhv
 
-# 1.5.2 Thể tích mờ Fuzzy Hypervolume (FH)
-def fuzzy_hypervolume(membership:np.ndarray)->float:
-    """
-    Args:
-    membership: Ma trận độ thuộc, mỗi hàng là 1 điểm, mỗi cột là 1 cụm.
-    """
-    # Tính thể tích của mỗi cụm
-    volumes = np.sum(membership,axis=0)
-    return np.sum(volumes)
-
-# 1.6 Chỉ số CS
+# 1.3.2 Chỉ số Compactness and Separation (CS)
 def cs_index(clusters: np.ndarray, centroids: np.ndarray) -> float:
     """
-    Args:
-    clusters: Danh sách các cụm, mỗi cụm là một danh sách các điểm dữ liệu.
-    centroids: Danh sách các tâm cụm.
+    CS kết hợp các khái niệm về khoảng cách giữa các cụm và độ lệch chuẩn của mỗi cụm. CS kết hợp
+    cả độ tách biệt và độ nén nhưng có thể bị ảnh hưởng bởi các điểm ngoại lai. CS > 0, giá trị càng thấp,
+    độ hợp lệ của phân cụm càng tốt.
     """
+    
     # Tính độ lệch chuẩn của mỗi cụm
     stds = [np.std(cluster, axis=0) for cluster in clusters]
     # Tính khoảng cách giữa các tâm cụm
@@ -126,7 +208,3 @@ def cs_index(clusters: np.ndarray, centroids: np.ndarray) -> float:
             if i != j:
                 result += (stds[i] + stds[j]) / distances[i, j]
     return result
-# ---------------------------Sklearn---------------------------
-def davies_bouldin_index_sckitlearn(X, labels):
-    from sklearn.metrics import davies_bouldin_score
-    return davies_bouldin_score(X, labels)
