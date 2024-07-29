@@ -4,24 +4,55 @@ import rasterio
 from PIL import Image
 
 
-def image2data(imgpath: str) -> tuple:
-    if not os.path.isfile(imgpath):
-        print(f'Duong dan anh {imgpath} khong ton tai')
+def image2data(img_input) -> tuple:
+    if isinstance(img_input, str):
+        # Input is a file path
+        if not os.path.isfile(img_input):
+            print(f'Image path {img_input} does not exist')
+            return None
+        try:
+            with rasterio.open(img_input) as dataset:
+                image_data = dataset.read()
+        except rasterio.errors.RasterioIOError:
+            print(f'Unable to read image at {img_input}')
+            return None
+    elif isinstance(img_input, np.ndarray):
+        # Input is already image data
+        image_data = img_input
+    else:
+        print(f'Invalid input type. Expected str or np.ndarray, got {type(img_input)}')
         return None
-    with rasterio.open(imgpath) as dataset:
-        image_data = dataset.read()
 
-    # Check the number of bands
-        if image_data.shape[0] == 1:
-            # The image is already in grayscale
-            image_data = image_data
-        else:
-            # Convert to grayscale by averaging the bands
-            image_data = np.mean(image_data, axis=0, keepdims=True)
+    # Normalize each band separately
+    normalized_data = []
+    for band in image_data:
+        # band = band - np.min(band)
+        # band = band / np.max(band)
+        normalized_data.append(band)
 
-    data = image_data.reshape((image_data.shape[1] * image_data.shape[2], image_data.shape[0]))
-    data = data - np.min(data, axis=0)
-    return data / np.max(data, axis=0), image_data.shape
+    # Stack normalized bands along a new dimension
+    normalized_data = np.stack(normalized_data, axis=-1)
+
+    # Reshape the data to (number of pixels, number of bands)
+    data = normalized_data.reshape((-1, image_data.shape[0]))
+
+    return data, image_data.shape
+
+
+def image_in_folder2data(folder_path: str) -> tuple:
+    if not os.path.isdir(folder_path):
+        print(f'Duong dan thu muc {folder_path} khong ton tai')
+        return None
+    image_files = [f for f in os.listdir(folder_path) if f.endswith('.tif')]
+    data = []
+    for imgfile in image_files:
+        imgpath = os.path.join(folder_path, imgfile)
+        with rasterio.open(imgpath) as dataset:
+            img_data = dataset.read()
+        data.append(img_data)
+    data = np.concatenate(data, axis=0)
+    
+    return data, data.shape
 
 
 def data2image(labels: np.ndarray, clusters: tuple, out_shape: tuple, output_path: str) -> None:
@@ -29,16 +60,21 @@ def data2image(labels: np.ndarray, clusters: tuple, out_shape: tuple, output_pat
     
     # Khai báo một bảng màu cho các cụm
     color_palette = np.array([
-        [255, 0, 0],    # Red
-        [0, 255, 0],    # Green
-        [0, 0, 255],    # Blue
-        [255, 255, 0],  # Yellow
-        [255, 0, 255],  # Magenta
-        [0, 255, 255],  # Cyan
-        [128, 0, 0],    # Maroon
-        [0, 128, 0],    # Dark Green
-        [0, 0, 128],    # Navy
-        [128, 128, 0],  # Olive
+        [128, 128, 128],  # Gray (Urban/Concrete)
+        [169, 169, 169],  # Dark Gray (Roads/Asphalt)
+        [205, 133, 63],   # Peru (Buildings/Roofs)
+        [240, 230, 140],  # Khaki (Dry Urban Areas)
+        [34, 139, 34],    # Forest Green (Urban Vegetation)
+        [0, 128, 0],      # Green (Parks/Gardens)
+        [0, 0, 255],      # Blue (Deep Water/Rivers)
+        [30, 144, 255],   # Dodger Blue (Shallow Water)
+        [70, 130, 180],   # Steel Blue (Water Bodies)
+        [210, 180, 140],  # Tan (Bare Soil/Earth)
+        [244, 164, 96],   # Sandy Brown (Beaches/Sandbanks)
+        [139, 69, 19],    # Saddle Brown (Bare Ground)
+        [255, 255, 255],  # White (Clouds/Bright Surfaces)
+        [105, 105, 105],  # Dim Gray (Shadows/Dark Areas)
+        [0, 255, 0],      # Lime (Bright Vegetation)
     ], dtype=np.uint8)
     
     # Nếu số cụm lớn hơn số màu trong bảng màu, lặp lại bảng màu
@@ -58,4 +94,5 @@ def data2image(labels: np.ndarray, clusters: tuple, out_shape: tuple, output_pat
         index += 1
     
     Image.fromarray(colored_segmented_image).save(output_path, format='TIFF')
+    print(colored_segmented_image.shape)
     print(f'Image saved to {output_path}')

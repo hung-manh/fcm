@@ -13,7 +13,7 @@ def load_config(config_path):
 
 if __name__ == "__main__":
     # ------------------------------------------
-    config = load_config('config/fcm_image.yaml')
+    config = load_config('config/fcm_image_folder.yaml')
     maxiter = config['maxiter']
     n_clusters = config['n_clusters']
     m = config['m']
@@ -24,7 +24,8 @@ if __name__ == "__main__":
     # ------------------------------------------
     start_time = time.time()
     
-    data, image_data_shape = image2data(input_image_path)
+    data, image_data_shape = image_in_folder2data(input_image_path)
+    data, image_data_shape1 = image2data(data)
     
     if config['debug']['print_time']:
         print("Thời gian lấy dữ liệu:", round_float(time.time() - start_time))
@@ -71,5 +72,5 @@ if __name__ == "__main__":
     if config['validity_indices']['fuzzy_hypervolume']:
         print("Chỉ số FHV:", fuzzy_hypervolume(U, m))
     if config['validity_indices']['cs_index']:
-        print("Chỉ số CS:", cs_index(clusters, V))
+        print("Chỉ số CS:", cs_index(data, U, clusters, m))
         
