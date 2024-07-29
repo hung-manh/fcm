@@ -46,7 +46,7 @@ def davies_bouldin_index(data:np.ndarray, labels:np.ndarray) -> float:
     # V = np.array([data[labels == i].mean(axis=0) for i in range(C)])
 
     # #  Tính độ lệch chuẩn cho mỗi cụm 
-    # d = [np.mean(np.linalg.norm(data[labels==i], V[i], axis=1)) for i in range(C)]
+    # d = [np.mean(np.linalg.norm(data[labels==i] - V[i], axis=1)) for i in range(C)]
         
     # # Tính Davies-Bouldin’s index
     # result = 0
@@ -54,7 +54,7 @@ def davies_bouldin_index(data:np.ndarray, labels:np.ndarray) -> float:
     #     max_ratio = 0
     #     for j in range(C):
     #         if i != j:
-    #             ratio = (d[i] + d[j]) / np.linalg.norm[V[i], V[j]]
+    #             ratio = (d[i] + d[j]) / np.linalg.norm(V[i] - V[j])
     #             max_ratio = max(max_ratio, ratio)
     #     result += max_ratio
     # return result / C
@@ -129,11 +129,11 @@ def silhouette_index(data:np.ndarray,labels:np.ndarray)->float:
     #     for j in range(N):
     #         if i != j:
     #             distance = np.sqrt(np.sum((data[i] - data[j])**2))
-    #         if labels[i] == labels[j]:
-    #             a_i += distance
-    #     else:
-    #         b_i = min(b_i, distance)
-            
+    #             if labels[i] == labels[j]:
+    #                 a_i += distance
+    #             else:
+    #                 b_i = min(b_i, distance)
+
     #     if np.sum(labels == labels[i]) > 1:
     #         a_i /= (np.sum(labels == labels[i]) - 1)
     #     else:
@@ -190,21 +190,50 @@ def fuzzy_hypervolume(membership:np.ndarray, m:float=2)->float:
             fhv += np.sum(cluster_u ** m) / n_i
     return fhv
 
-# 1.3.2 Chỉ số Compactness and Separation (CS)
-def cs_index(clusters: np.ndarray, centroids: np.ndarray) -> float:
+
+def cs_index(data: np.ndarray, membership: np.ndarray, centroids: np.ndarray, m: float = 2) -> float:
     """
     CS kết hợp các khái niệm về khoảng cách giữa các cụm và độ lệch chuẩn của mỗi cụm. CS kết hợp
     cả độ tách biệt và độ nén nhưng có thể bị ảnh hưởng bởi các điểm ngoại lai. CS > 0, giá trị càng thấp,
     độ hợp lệ của phân cụm càng tốt.
     """
-    
-    # Tính độ lệch chuẩn của mỗi cụm
-    stds = [np.std(cluster, axis=0) for cluster in clusters]
-    # Tính khoảng cách giữa các tâm cụm
-    distances = np.linalg.norm(centroids[:, np.newaxis] - centroids, axis=2)
-    result = 0
-    for i in range(len(clusters)):
-        for j in range(len(clusters)):
-            if i != j:
-                result += (stds[i] + stds[j]) / distances[i, j]
-    return result
+    N, C = membership.shape
+    numerator = 0
+    for i in range(C):
+        numerator += np.sum((membership[:, i]**m)[:, np.newaxis] *
+                            np.sum((data - centroids[i])**2, axis=1)[:, np.newaxis])
+    min_center_dist = np.min([np.sum((centroids[i] - centroids[j])**2)
+                              for i in range(C)
+                              for j in range(i+1, C)])
+    return numerator / (N * min_center_dist)
+
+# AC
+def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    # if len(y_true) != len(y_pred):
+    #     raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
+
+    # correct_predictions = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred))
+    # total_samples = len(y_true)
+    # return correct_predictions / total_samples
+    from sklearn.metrics import accuracy_score
+    return accuracy_score(y_true, y_pred)
+
+
+# F1
+def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    # if len(y_true) != len(y_pred):
+    #     raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
+
+    # # Tính TP, FP, FN
+    # tp = sum((yt == 1) and (yp == 1) for yt, yp in zip(y_true, y_pred))
+    # fp = sum((yt == 0) and (yp == 1) for yt, yp in zip(y_true, y_pred))
+    # fn = sum((yt == 1) and (yp == 0) for yt, yp in zip(y_true, y_pred))
+
+    # # Tính precision và recall
+    # precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    # recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+
+    # total = precision + recall
+    # return 2 * (precision * recall) / total if total > 0 else 0
+    from sklearn.metrics import f1_score
+    return f1_score(y_true, y_pred)
