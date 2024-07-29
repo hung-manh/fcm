@@ -32,6 +32,7 @@ def dunn_index(clusters:np.ndarray)->float:
     
     return np.min(min_distances[min_distances > 0])  / np.max(diameters)
 
+
 def davies_bouldin_index(data:np.ndarray, labels:np.ndarray) -> float:
     """
     Chỉ số DB đo lường mức độ chồng chéo giữa các cụm, giá trị càng thấp càng tốt. DB thấp phản ánh
@@ -89,30 +90,32 @@ def calinski_harabasz_index(data:np.ndarray,labels:np.ndarray)->float:
     Chỉ số CH đo lường mức độ phân biệt giữa các cụm so với mức độ phân tán trong mỗi cụm, giá trị
     càng cao, độ hợp lệ của phân cụm càng tốt.
     """
-    N = len(data)
-    C = len(np.unique(labels))
+    # N = len(data)
+    # C = len(np.unique(labels))
     
-    overall_mean = np.mean(data, axis=0)
+    # overall_mean = np.mean(data, axis=0)
     
-    # Tính tổng phương sai
-    within_var = 0
-    for i in range(C):
-        cluster_i = data[labels == i]
-        cluster_mean = np.mean(cluster_i, axis=0)
-        within_var += np.sum((cluster_i - cluster_mean) ** 2)
+    # # Tính tổng phương sai
+    # within_var = 0
+    # for i in range(C):
+    #     cluster_i = data[labels == i]
+    #     cluster_mean = np.mean(cluster_i, axis=0)
+    #     within_var += np.sum((cluster_i - cluster_mean) ** 2)
     
-    # Tính phương sai giữa các cụm
-    between_var = 0
-    for i in range(C):
-        cluster_i = data[labels == i]
-        ni = len(cluster_i)
-        cluster_mean = np.mean(cluster_i, axis=0)
-        between_var += ni * np.sum((cluster_mean - overall_mean) ** 2)
+    # # Tính phương sai giữa các cụm
+    # between_var = 0
+    # for i in range(C):
+    #     cluster_i = data[labels == i]
+    #     ni = len(cluster_i)
+    #     cluster_mean = np.mean(cluster_i, axis=0)
+    #     between_var += ni * np.sum((cluster_mean - overall_mean) ** 2)
                          
-    # Tính phương sai trong cụm
-    if N == C or C == 1:
-        return 0
-    return (between_var / (C - 1)) / (within_var / (N - C))
+    # # Tính phương sai trong cụm
+    # if N == C or C == 1:
+    #     return 0
+    # return (between_var / (C - 1)) / (within_var / (N - C))
+    from sklearn.metrics import calinski_harabasz_score
+    return calinski_harabasz_score(data, labels)
 
 
 ## 1.1.5 Chỉ số Silhouette
@@ -206,34 +209,3 @@ def cs_index(data: np.ndarray, membership: np.ndarray, centroids: np.ndarray, m:
                               for i in range(C)
                               for j in range(i+1, C)])
     return numerator / (N * min_center_dist)
-
-# AC
-def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    # if len(y_true) != len(y_pred):
-    #     raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
-
-    # correct_predictions = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred))
-    # total_samples = len(y_true)
-    # return correct_predictions / total_samples
-    from sklearn.metrics import accuracy_score
-    return accuracy_score(y_true, y_pred)
-
-
-# F1
-def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    # if len(y_true) != len(y_pred):
-    #     raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
-
-    # # Tính TP, FP, FN
-    # tp = sum((yt == 1) and (yp == 1) for yt, yp in zip(y_true, y_pred))
-    # fp = sum((yt == 0) and (yp == 1) for yt, yp in zip(y_true, y_pred))
-    # fn = sum((yt == 1) and (yp == 0) for yt, yp in zip(y_true, y_pred))
-
-    # # Tính precision và recall
-    # precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-    # recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-
-    # total = precision + recall
-    # return 2 * (precision * recall) / total if total > 0 else 0
-    from sklearn.metrics import f1_score
-    return f1_score(y_true, y_pred)
