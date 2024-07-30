@@ -93,6 +93,7 @@ def data2image(labels: np.ndarray, clusters: tuple, out_shape: tuple, output_pat
         output_path = f"{base}_{index}{ext}"
         index += 1
     
-    Image.fromarray(colored_segmented_image).save(output_path, format='TIFF')
+    # Image.fromarray(colored_segmented_image).save(output_path, format='TIFF')
+    Image.fromarray(colored_segmented_image).save(output_path)
     print(colored_segmented_image.shape)
     print(f'Image saved to {output_path}')

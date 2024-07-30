@@ -1,5 +1,5 @@
 import numpy as np 
-
+from utils.utils import round_float
 
 # 1.1 Chỉ số đo lường mức độ tách biệt giữa các cụm
 ## 1.1.1 Chỉ số Dunn (DI)
@@ -30,7 +30,7 @@ def dunn_index(clusters:np.ndarray)->float:
         for cluster in clusters
     ])
     
-    return np.min(min_distances[min_distances > 0])  / np.max(diameters)
+    return round_float(np.min(min_distances[min_distances > 0])  / np.max(diameters))
 
 
 def davies_bouldin_index(data:np.ndarray, labels:np.ndarray) -> float:
@@ -58,10 +58,10 @@ def davies_bouldin_index(data:np.ndarray, labels:np.ndarray) -> float:
     #             ratio = (d[i] + d[j]) / np.linalg.norm(V[i] - V[j])
     #             max_ratio = max(max_ratio, ratio)
     #     result += max_ratio
-    # return result / C
+    # return round_float(result / C)
 
     from sklearn.metrics import davies_bouldin_score
-    return davies_bouldin_score(data, labels)
+    return round_float(davies_bouldin_score(data, labels))
 
 
 ## 1.1.3 Chỉ số tách biệt Separation (S)
@@ -81,7 +81,7 @@ def separation_index(data:np.ndarray, membership:np.ndarray, centers:np.ndarray,
     center_dists = np.sum((centers[:, np.newaxis] - centers) ** 2, axis=2)
     np.fill_diagonal(center_dists, np.inf)
     min_center_dist = np.min(center_dists)
-    return numerator / min_center_dist
+    return round_float(numerator / min_center_dist)
 
 
 ## 1.1.4 Chỉ số Calinski-Harabasz (CH)
@@ -112,10 +112,10 @@ def calinski_harabasz_index(data:np.ndarray,labels:np.ndarray)->float:
                          
     # # Tính phương sai trong cụm
     # if N == C or C == 1:
-    #     return 0
-    # return (between_var / (C - 1)) / (within_var / (N - C))
+    #     return round_float(0)
+    # return round_float((between_var / (C - 1)) / (within_var / (N - C)))
     from sklearn.metrics import calinski_harabasz_score
-    return calinski_harabasz_score(data, labels)
+    return round_float(calinski_harabasz_score(data, labels))
 
 
 ## 1.1.5 Chỉ số Silhouette
@@ -142,9 +142,9 @@ def silhouette_index(data:np.ndarray,labels:np.ndarray)->float:
     #     else:
     #         a_i = 0
     #     silhouette_vals[i] = (b_i - a_i) / max(a_i, b_i)
-    # return np.mean(silhouette_vals)
+    # return round_float(np.mean(silhouette_vals))
     from sklearn.metrics import silhouette_score
-    return silhouette_score(data, labels)
+    return round_float(silhouette_score(data, labels))
 
 # 1.2 Chỉ số đo lường mức độ rõ ràng của các cụm
 ## 1.2.1 Hệ số phân vùng Partition Coefficient (PCI), Giống hệt chỉ số FPC
@@ -153,8 +153,8 @@ def partition_coefficient(membership:np.ndarray)->float: # Fuzzy Partition Coeff
     Chỉ số PC đo lường mức độ rõ ràng của các cụm, giá trị càng cao, độ hợp lệ của phân cụm càng tốt.
     Chỉ số PC phù hợp với thuật toán phân cụm mờ, không phản ánh sự tách biệt giữa các cụm.
     """
-    return np.sum(np.square(membership)) / membership.shape[0]
-    # return np.trace(np.dot(membership.T, membership)) / membership.shape[0]
+    return round_float(np.sum(np.square(membership)) / membership.shape[0])
+    # return round_float(np.trace(np.dot(membership.T, membership)) / membership.shape[0])
     
     
 ## 1.2.2 Entropy phân loại Classification Entropy (CEI)
@@ -172,7 +172,7 @@ def classification_entropy(membership:np.ndarray,a:float=np.e)->float:
     
     # Tính tỉ lệ phần trăm điểm dữ liệu thuộc về mỗi cụm
     log_u = np.log(membership) / np.log(a) # Chuyển đổi cơ số logarit
-    return -np.sum(membership * log_u) / N
+    return round_float(-np.sum(membership * log_u) / N)
 
 
 # 1.3 Các chỉ số khác
@@ -191,7 +191,7 @@ def fuzzy_hypervolume(membership:np.ndarray, m:float=2)->float:
         n_i = np.sum(cluster_u > 0)
         if n_i > 0:
             fhv += np.sum(cluster_u ** m) / n_i
-    return fhv
+    return round_float(fhv)
 
 
 def cs_index(data: np.ndarray, membership: np.ndarray, centroids: np.ndarray, m: float = 2) -> float:
@@ -208,4 +208,4 @@ def cs_index(data: np.ndarray, membership: np.ndarray, centroids: np.ndarray, m:
     min_center_dist = np.min([np.sum((centroids[i] - centroids[j])**2)
                               for i in range(C)
                               for j in range(i+1, C)])
-    return numerator / (N * min_center_dist)
+    return round_float(numerator / (N * min_center_dist))
