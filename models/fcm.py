@@ -26,33 +26,32 @@ class Dfcm:
         # return V / (_umT.sum(axis=1)[:, None])
         
         # Code mới
-        um = membership ** self._m
-        return (um.T @ data) / um.sum(axis=0)[:, np.newaxis]
+        um = membership ** self._m # u_ik^m
+        return (um.T @ data) / um.sum(axis=0)[:, np.newaxis] # (Σ(u_ik^m * x_i)) / (Σ(u_ik^m))
     
     
     # Cập nhật ma trận thành viên, ma trận độ thuộc 
-    def __update_membership_matrix(self, distances: np.ndarray) -> np.ndarray:
+    def update_membership_matrix(self, distances: np.ndarray) -> np.ndarray:
+        epsilon = 1e-10  # small constant to prevent division by zero
+        distances = np.maximum(distances, epsilon)  # avoid zero distances
         U = distances[:, :, None] * (1 / distances)[:, None, :]
         U = (U ** (2 / (self._m - 1))).sum(axis=2)
-        return 1 / U
+        return 1 / U # d_ik^(-2/(m-1)) / Σ(d_ik^(-2/(m-1)))
         
         # power = 2 / (self._m - 1)
         # return 1 / ((distances[:, :, np.newaxis] / distances[:, np.newaxis, :]) ** power).sum(axis=2)
 
     # Fuzzy C-means algorithm
-    def cmeans(self, data: np.ndarray, C: int, seed: int = 42) -> tuple:
+    def cmeans(self, data: np.ndarray, C:int = 3, seed: int = 42) -> tuple:
         u = self.__init_membership(len(data), C, seed)
         for step in range(self._maxiter):
             old_u = u.copy()
             v = self.update_cluster_centers(data, old_u)
-            sdistances = euclidean_cdist(data, v)
-            u = self.__update_membership_matrix(sdistances)
+            sdistances = euclidean_cdist(data, v) # Khoảng các Euclidean giữa các điểm dữ liệu(data) và các tâm cụm(centroids)
+            u = self.update_membership_matrix(sdistances)
             
             # print(str(np.linalg.norm(u - old_u)), '\t ', str((np.abs(u - old_u)).max(axis=(0, 1))))
             # if np.linalg.norm(u - old_u) < self._epsilon:
             if (np.abs(u - old_u)).max(axis=(0, 1)) < self._epsilon:
                 break
-        labels = np.argmax(u, axis=1)
-        clusters = [data[labels == i] for i in range(C)]
-        # Trả về ma trận độ thuộc, ma trận tâm cụm, số bước lặp, nhãn cụm, danh sách cụm
-        return u, v, step + 1, labels, clusters
+        return u, v, step + 1
