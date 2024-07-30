@@ -31,7 +31,7 @@ class Dfcm:
     
     
     # Cập nhật ma trận thành viên, ma trận độ thuộc 
-    def __update_membership_matrix(self, distances: np.ndarray) -> np.ndarray:
+    def update_membership_matrix(self, distances: np.ndarray) -> np.ndarray:
         epsilon = 1e-10  # small constant to prevent division by zero
         distances = np.maximum(distances, epsilon)  # avoid zero distances
         U = distances[:, :, None] * (1 / distances)[:, None, :]
@@ -48,7 +48,7 @@ class Dfcm:
             old_u = u.copy()
             v = self.update_cluster_centers(data, old_u)
             sdistances = euclidean_cdist(data, v) # Khoảng các Euclidean giữa các điểm dữ liệu(data) và các tâm cụm(centroids)
-            u = self.__update_membership_matrix(sdistances)
+            u = self.update_membership_matrix(sdistances)
             
             # print(str(np.linalg.norm(u - old_u)), '\t ', str((np.abs(u - old_u)).max(axis=(0, 1))))
             # if np.linalg.norm(u - old_u) < self._epsilon:
