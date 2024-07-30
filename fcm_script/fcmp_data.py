@@ -54,8 +54,6 @@ if __name__ == "__main__":
             print("Chỉ số Dunn:", dunn_index(clusters))
         if config['validity_indices']['davies_bouldin_index']:
             print("Chỉ số Davies-Bouldin:", davies_bouldin_index(clusters, V))
-        if config['validity_indices']['davies_bouldin_index_sckitlearn']:
-            print("Chỉ số Davies-Bouldin scikit-learn:", davies_bouldin_index_sckitlearn(_dt['X'], labels))
         if config['validity_indices']['separation_index']:
             print("Chỉ số SI:", separation_index(clusters, V))
         if config['validity_indices']['partition_coefficient']:

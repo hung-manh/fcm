@@ -1,7 +1,7 @@
 import numpy as np 
 from multiprocessing import Pool, cpu_count
 from .fcm import Dfcm
-
+from utils.utils import euclidean_cdist
 
 class Dfcm_parallel:
     def __init__(self, num_processes: int = None):
@@ -20,9 +20,20 @@ class Dfcm_parallel:
             results = pool.starmap(fcm.cmeans, [(chunk, C, seed) for p, chunk in enumerate(data_chunks)]) 
             
         # Kết hợp kết quả từ các process
-        all_u = np.concatenate([results[0] for results in results], axis=0)
-        all_v = fcm.update_cluster_centers(data, all_u)            
-        return all_u, all_v
+        # # Cách 1: cộng U rồi cập nhật V rồi cập nhật U 
+        # all_u = np.concatenate([results[0] for results in results], axis=0)
+        # all_v = fcm.update_cluster_centers(data, all_u)  
+        
+        # all_u = fcm.update_membership_matrix(euclidean_cdist(data, all_v))
+        
+        # cách 2: Chuẩn hoá đc tính toán phân cụm FCM song song, tổng hợp UV bằng cách tìm V mới 
+        # bằng cách thực hiện FCM cho V tổng (cộng cơ học theo hàng), sau đó tính lại U mới theo V mới. 
+        # KQ các chỉ số đánh giá cũng đẹp, phân cụm ảnh cũng giống nối tiếp với time nhanh hơn.
+        all_v = np.concatenate([results[1] for results in results], axis = 0)
+        _, V, _ = fcm.cmeans(all_v, C, seed)
+        U = fcm.update_membership_matrix(euclidean_cdist(data, V))
+
+        return U, V
         
             
         
