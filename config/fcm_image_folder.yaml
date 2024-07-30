@@ -1,17 +1,21 @@
 # General settings
 maxiter: 10000
+n_clusters: 5
 m: 2
 epsilon: 0.00001
 seed: 42
-data_id: 602 # 53: Iris, 109: Wine, 602: DryBean
+
+# Input/Output
+input_image_path: 'data/images/Anh-ve-tinh/Anh-da-pho/HaNoi'
+output_image_path: 'outputs/segmented_image.tif'
 
 # Validity indices to calculate
 validity_indices:
-  dunn_index: true 
+  dunn_index: false # tràn bộ nhớ Khi kich thước ảnh lớn
   davies_bouldin_index: true # ok
   separation_index: true # ok
   calinski_harabasz_index: true # ok
-  silhouette_index: true
+  silhouette_index: false
   partition_coefficient: true # ok
   classification_entropy: true 
   fuzzy_hypervolume: true # ok
