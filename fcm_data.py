@@ -62,8 +62,18 @@ if __name__ == "__main__":
         if config['validity_indices']['partition_coefficient']:
             print("Chỉ số PC:", partition_coefficient(U))
         if config['validity_indices']['classification_entropy']:
-            print("Chỉ số CE:", classification_entropy(labels))
+            print("Chỉ số CE:", classification_entropy(U))
         if config['validity_indices']['fuzzy_hypervolume']:
             print("Chỉ số FHV:", fuzzy_hypervolume(U, m))
         if config['validity_indices']['cs_index']:
             print("Chỉ số CS:", cs_index(_dt['X'], U, V, m))
+        
+        
+        # y_pred = labels
+        # y_true = _dt['Y']
+        # labels2number = {v: k for k, v in enumerate(np.unique(y_true))}
+        # y_true = np.array([labels2number[i] for i in y_true])
+        # print("Accuracy:", accuracy_score(y_true, y_pred))
+        # print("Precision:", precision(y_true, y_pred))
+        # print("Recall:", recall(y_true, y_pred))
+        # print("F1 Score:", f1_score(y_true, y_pred))

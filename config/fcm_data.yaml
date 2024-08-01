@@ -3,11 +3,11 @@ maxiter: 10000
 m: 2
 epsilon: 0.00001
 seed: 42
-data_id: 602 # 53: Iris, 109: Wine, 602: DryBean
+data_id: 53 # 53: Iris, 109: Wine, 602: DryBean
 
 # Validity indices to calculate
 validity_indices:
-  dunn_index: true 
+  dunn_index: true  
   davies_bouldin_index: true # ok
   separation_index: true # ok
   calinski_harabasz_index: true # ok
