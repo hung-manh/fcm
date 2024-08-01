@@ -60,21 +60,21 @@ def data2image(labels: np.ndarray, clusters: tuple, out_shape: tuple, output_pat
     
     # Khai báo một bảng màu cho các cụm
     color_palette = np.array([
-        [128, 128, 128],  # Gray (Urban/Concrete)
-        [169, 169, 169],  # Dark Gray (Roads/Asphalt)
-        [205, 133, 63],   # Peru (Buildings/Roofs)
-        [240, 230, 140],  # Khaki (Dry Urban Areas)
-        [34, 139, 34],    # Forest Green (Urban Vegetation)
-        [0, 128, 0],      # Green (Parks/Gardens)
-        [0, 0, 255],      # Blue (Deep Water/Rivers)
-        [30, 144, 255],   # Dodger Blue (Shallow Water)
-        [70, 130, 180],   # Steel Blue (Water Bodies)
-        [210, 180, 140],  # Tan (Bare Soil/Earth)
-        [244, 164, 96],   # Sandy Brown (Beaches/Sandbanks)
-        [139, 69, 19],    # Saddle Brown (Bare Ground)
-        [255, 255, 255],  # White (Clouds/Bright Surfaces)
-        [105, 105, 105],  # Dim Gray (Shadows/Dark Areas)
-        [0, 255, 0],      # Lime (Bright Vegetation)
+        [0,50,199],  # River, ponds, lakes
+        [149,149,149],  # Rocks, mountains, bare soil
+        [101,254,50],   # fields, grasslands
+        [50,199,255],  # Planted forests, low wood 
+        [0,100,1],      # Perinial tree, crops 
+        [0,50,0],      # Jungle
+        # [34, 139, 34],    # Forest Green (Urban Vegetation)
+        # [30, 144, 255],   # Dodger Blue (Shallow Water)
+        # [70, 130, 180],   # Steel Blue (Water Bodies)
+        # [210, 180, 140],  # Tan (Bare Soil/Earth)
+        # [244, 164, 96],   # Sandy Brown (Beaches/Sandbanks)
+        # [139, 69, 19],    # Saddle Brown (Bare Ground)
+        # [255, 255, 255],  # White (Clouds/Bright Surfaces)
+        # [105, 105, 105],  # Dim Gray (Shadows/Dark Areas)
+        # [0, 255, 0],      # Lime (Bright Vegetation)
     ], dtype=np.uint8)
     
     # Nếu số cụm lớn hơn số màu trong bảng màu, lặp lại bảng màu

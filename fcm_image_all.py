@@ -10,7 +10,7 @@ if __name__ == "__main__":
  # ------------------------------------------
     maxiter = 10000
     m = 2
-    C = 5
+    C = 6
     epsilon = 1e-5
     seed = 42
     metrics = []
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     'Time': round_float(time.time() - _start_time),
     'DB': davies_bouldin_index(data, labels) ,
     'PC': partition_coefficient(U1) ,
-    'CE': classification_entropy(labels) ,
+    'CE': classification_entropy(U1) ,
     'S': separation_index(data, U1, V1, m) ,
     'CH': calinski_harabasz_index(data, labels) ,
     'FHV': fuzzy_hypervolume(U1, m) ,
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     'Time': round_float(time.time() - _start_time),
     'DB': davies_bouldin_index(data, labels) ,
     'PC': partition_coefficient(U2) ,
-    'CE': classification_entropy(labels) ,
+    'CE': classification_entropy(U2) ,
     'S': separation_index(data, U2, V2, m) ,
     'CH': calinski_harabasz_index(data, labels) ,
     'FHV': fuzzy_hypervolume(U2, m) ,
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     'Time': round_float(time.time() - _start_time),
     'DB': davies_bouldin_index(data, labels) ,
     'PC': partition_coefficient(U3) ,
-    'CE': classification_entropy(labels) ,
+    'CE': classification_entropy(U3) ,
     'S': separation_index(data, U3, V3, m) ,
     'CH': calinski_harabasz_index(data, labels) ,
     'FHV': fuzzy_hypervolume(U3, m) ,
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     'Time': round_float(time.time() - _start_time),
     'DB': davies_bouldin_index(data, labels) ,
     'PC': partition_coefficient(U4) ,
-    'CE': classification_entropy(labels) ,
+    'CE': classification_entropy(U4) ,
     'S': separation_index(data, U4, V4, m) ,
     'CH': calinski_harabasz_index(data, labels) ,
     'FHV': fuzzy_hypervolume(U4, m) ,

@@ -1,12 +1,11 @@
 import numpy as np 
-from utils.utils import round_float
+from utils.utils import round_float, norm_distances
 
 # 1.1 Chỉ số đo lường mức độ tách biệt giữa các cụm
 ## 1.1.1 Chỉ số Dunn (DI)
-def dunn_index(clusters:np.ndarray)->float:
+def dunn_index(clusters)->float:
     """
     Args:
-    clusters: Danh sách các cụm, mỗi cụm là một danh sách các điểm dữ liệu.
     Giá trị trả về: Chỉ số Dunn, càng cao càng tốt, càng thể hiện độ tách biệt giữa các cụm.
     
     Chỉ số DI đo lường khoảng cách tối thiểu giữa các cụm so với khoảng cách tối đa trong mỗi cụm. Giá
@@ -65,7 +64,7 @@ def davies_bouldin_index(data:np.ndarray, labels:np.ndarray) -> float:
 
 
 ## 1.1.3 Chỉ số tách biệt Separation (S)
-def separation_index(data:np.ndarray, membership:np.ndarray, centers:np.ndarray, m:float=2)->float:
+def separation_index(data:np.ndarray, membership:np.ndarray, centroids:np.ndarray, m:float=2)->float:
     """
     Chỉ số S áp dụng cho phân cụm mờ, đo lường mức độ tách biệt giữa các cụm. S ∈ (0, ∞), giá trị càng
     thấp càng tốt, cho thấy các cụm được phân tách rõ ràng hơn. Nên được sử dụng kèm với PC, CE, thường
@@ -75,10 +74,10 @@ def separation_index(data:np.ndarray, membership:np.ndarray, centers:np.ndarray,
     _ut = membership.T
     numerator = 0
     for i in range(C):
-        diff = data - centers[i]
+        diff = data - centroids[i]
         squared_diff = np.sum(diff**2, axis=1)
         numerator += np.sum((_ut[i] ** m) * squared_diff)
-    center_dists = np.sum((centers[:, np.newaxis] - centers) ** 2, axis=2)
+    center_dists = np.sum((centroids[:, np.newaxis] - centroids) ** 2, axis=2)
     np.fill_diagonal(center_dists, np.inf)
     min_center_dist = np.min(center_dists)
     return round_float(numerator / min_center_dist)
@@ -209,3 +208,62 @@ def cs_index(data: np.ndarray, membership: np.ndarray, centroids: np.ndarray, m:
                               for i in range(C)
                               for j in range(i+1, C)])
     return round_float(numerator / (N * min_center_dist))
+
+
+# AC
+# AC
+def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    # if len(y_true) != len(y_pred):
+    #     raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
+
+    # correct_predictions = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred))
+    # total_samples = len(y_true)
+    # return correct_predictions / total_samples
+    from sklearn.metrics import accuracy_score
+    return accuracy_score(y_true, y_pred)
+
+
+# F1
+def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    # if len(y_true) != len(y_pred):
+    #     raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
+
+    # # Tính TP, FP, FN
+    # tp = sum((yt == 1) and (yp == 1) for yt, yp in zip(y_true, y_pred))
+    # fp = sum((yt == 0) and (yp == 1) for yt, yp in zip(y_true, y_pred))
+    # fn = sum((yt == 1) and (yp == 0) for yt, yp in zip(y_true, y_pred))
+
+    # # Tính precision và recall
+    # precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    # recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+
+    # total = precision + recall
+    # return 2 * (precision * recall) / total if total > 0 else 0
+    from sklearn.metrics import f1_score
+    return f1_score(y_true, y_pred)
+
+def precision(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    if len(y_true) != len(y_pred):
+        raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
+
+    # Tính TP, FP, FN
+    tp = sum((yt == 1) and (yp == 1) for yt, yp in zip(y_true, y_pred))
+    fp = sum((yt == 0) and (yp == 1) for yt, yp in zip(y_true, y_pred))
+    fn = sum((yt == 1) and (yp == 0) for yt, yp in zip(y_true, y_pred))
+
+    # Tính precision và recall
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    return precision
+
+def recall(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    if len(y_true) != len(y_pred):
+        raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
+
+    # Tính TP, FP, FN
+    tp = sum((yt == 1) and (yp == 1) for yt, yp in zip(y_true, y_pred))
+    fp = sum((yt == 0) and (yp == 1) for yt, yp in zip(y_true, y_pred))
+    fn = sum((yt == 1) and (yp == 0) for yt, yp in zip(y_true, y_pred))
+
+    # Tính precision và recall
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    return recall

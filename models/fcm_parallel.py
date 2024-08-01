@@ -1,7 +1,7 @@
 import numpy as np 
 from multiprocessing import Pool, cpu_count
 from .fcm import Dfcm
-from utils.utils import euclidean_cdist
+from utils.utils import norm_distances
 
 class Dfcm_parallel:
     def __init__(self, num_processes: int = None):
@@ -31,7 +31,7 @@ class Dfcm_parallel:
         # KQ các chỉ số đánh giá cũng đẹp, phân cụm ảnh cũng giống nối tiếp với time nhanh hơn.
         all_v = np.concatenate([results[1] for results in results], axis = 0)
         _, V, _ = fcm.cmeans(all_v, C, seed)
-        U = fcm.update_membership_matrix(euclidean_cdist(data, V))
+        U = fcm.update_membership_matrix(norm_distances(data, V))
 
         return U, V
         
