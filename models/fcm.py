@@ -1,9 +1,8 @@
 import numpy as np
-from utils.utils import euclidean_cdist
+from utils.utils import norm_distances
 
 class Dfcm:
-    def __init__(self, C: int, m: float = 2, epsilon: float = 1e-5, maxiter: int = 10000):
-        self.C = C
+    def __init__(self, m: float = 2, epsilon: float = 1e-5, maxiter: int = 10000):
         self._m = m  # Mức độ mờ - Degree of fuzziness  
         self._epsilon = epsilon  # Tiêu chuẩn dừng - epsilon 
         self._maxiter = maxiter  # Maximum number of iterations
@@ -32,7 +31,7 @@ class Dfcm:
     
     
     # Cập nhật ma trận thành viên, ma trận độ thuộc 
-    def __update_membership_matrix(self, distances: np.ndarray) -> np.ndarray:
+    def update_membership_matrix(self, distances: np.ndarray) -> np.ndarray:
         epsilon = 1e-10  # small constant to prevent division by zero
         distances = np.maximum(distances, epsilon)  # avoid zero distances
         U = distances[:, :, None] * (1 / distances)[:, None, :]
@@ -43,20 +42,16 @@ class Dfcm:
         # return 1 / ((distances[:, :, np.newaxis] / distances[:, np.newaxis, :]) ** power).sum(axis=2)
 
     # Fuzzy C-means algorithm
-    def cmeans(self, data: np.ndarray, seed: int = 42) -> tuple:
-        u = self.__init_membership(len(data), self.C, seed)
+    def cmeans(self, data: np.ndarray, C:int = 3, seed: int = 42) -> tuple:
+        u = self.__init_membership(len(data), C, seed)
         for step in range(self._maxiter):
             old_u = u.copy()
             v = self.update_cluster_centers(data, old_u)
-            sdistances = euclidean_cdist(data, v)
-            u = self.__update_membership_matrix(sdistances)
+            sdistances = norm_distances(data, v) # Khoảng các Euclidean giữa các điểm dữ liệu(data) và các tâm cụm(centroids)
+            u = self.update_membership_matrix(sdistances)
             
             # print(str(np.linalg.norm(u - old_u)), '\t ', str((np.abs(u - old_u)).max(axis=(0, 1))))
             # if np.linalg.norm(u - old_u) < self._epsilon:
             if (np.abs(u - old_u)).max(axis=(0, 1)) < self._epsilon:
                 break
-        # labels = np.argmax(u, axis=1)
-        # clusters = [data[labels == i] for i in range(self.C)]
-        # # Trả về ma trận độ thuộc, ma trận tâm cụm, số bước lặp, nhãn cụm, danh sách cụm
-        # return u, v, step + 1, labels, clusters
         return u, v, step + 1
