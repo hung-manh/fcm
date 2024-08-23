@@ -84,7 +84,7 @@ def data2image(labels: np.ndarray, clusters: tuple, out_shape: tuple, output_pat
     
     # Tạo ảnh màu từ ảnh phân đoạn
     colored_segmented_image = color_palette[segmented_image]
-    
+        
     
     # Xử lý path đầu ra
     base, ext = os.path.splitext(output_path)

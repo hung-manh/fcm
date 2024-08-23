@@ -210,8 +210,9 @@ def cs_index(data: np.ndarray, membership: np.ndarray, centroids: np.ndarray, m:
     return round_float(numerator / (N * min_center_dist))
 
 
+# For data have labls (y_true, y_pred)
 # AC
-# AC
+# https://stackoverflow.com/questions/37842165/sklearn-calculating-accuracy-score-of-k-means-on-the-test-data-set
 def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     # if len(y_true) != len(y_pred):
     #     raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
@@ -239,8 +240,9 @@ def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
     # total = precision + recall
     # return 2 * (precision * recall) / total if total > 0 else 0
+    # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
     from sklearn.metrics import f1_score
-    return f1_score(y_true, y_pred)
+    return f1_score(y_true, y_pred, average='micro')
 
 def precision(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     if len(y_true) != len(y_pred):
@@ -267,3 +269,45 @@ def recall(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     # Tính precision và recall
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
     return recall
+
+def mean_squared_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    # if len(y_true) != len(y_pred):
+    #     raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
+
+    # return sum((yt - yp) ** 2 for yt, yp in zip(y_true, y_pred)) / len(y_true)
+    from sklearn.metrics import mean_squared_error
+    return mean_squared_error(y_true, y_pred)
+
+def mean_absolute_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    # if len(y_true) != len(y_pred):
+    #     raise ValueError("Độ dài của y_true và y_pred phải giống nhau")
+
+    # return sum(abs(yt - yp) for yt, yp in zip(y_true, y_pred)) / len(y_true)
+    from sklearn.metrics import mean_absolute_error
+    return mean_absolute_error(y_true, y_pred)
+
+
+def purity_score(y_true, y_pred):
+    # https://medium.com/@vincydesy96/evaluation-of-supervised-clustering-purity-from-scratch-3ce42e1491b1
+    # Purity ranges from 0 to 1, where 1 indicates perfect clustering (each cluster contains only instances of a single class), 
+    # and 0 indicates the worst clustering (each cluster contains instances from all classes).
+    # Also if you need to compute Inverse Purity, all you need to do is replace "axis=0" by "axis=1".
+    
+    from sklearn import metrics
+    # compute contingency matrix (also called confusion matrix)
+    contingency_matrix = metrics.cluster.contingency_matrix(y_true, y_pred)
+    # return purity
+    return np.sum(np.amax(contingency_matrix, axis=0)) / np.sum(contingency_matrix)
+
+
+def normalized_mutual_info_score(y_true, y_pred):
+    # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.normalized_mutual_info_score.html
+    from sklearn.metrics import normalized_mutual_info_score
+    return normalized_mutual_info_score(y_true, y_pred)
+
+
+def sum_of_square_error(y_true, y_pred) -> float:
+    """
+    https://www.statology.org/sst-ssr-sse-in-python/
+    """
+    return np.sum((y_pred - y_true) ** 2)
