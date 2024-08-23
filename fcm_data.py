@@ -17,10 +17,11 @@ if __name__ == "__main__":
     maxiter = config['maxiter']
     m = config['m']
     epsilon = config['epsilon']
-    seed = config['seed']
-    # seed = 24
+    # seed = config['seed']
+    seed = 24
     DATA_ID = config['data_id']  
-    C = TEST_CASES[DATA_ID]['n_cluster']
+    # C = TEST_CASES[DATA_ID]['n_cluster']
+    C = 4
     
     # ------------------------------------------
     _start_time = time.time()
@@ -52,22 +53,22 @@ if __name__ == "__main__":
         # Tính toán các chỉ số đánh giá dựa trên cấu hình
         # if config['validity_indices']['dunn_index']:
         #     print("Chỉ số Dunn:", dunn_index(clusters))
-        # if config['validity_indices']['davies_bouldin_index']:
-        #     print("Chỉ số DB:", davies_bouldin_index(_dt['X'], labels))
-        # if config['validity_indices']['separation_index']:
-        #     print("Chỉ số S:", separation_index(_dt['X'], U, V, m))
-        # if config['validity_indices']['calinski_harabasz_index']:
-        #     print("Chỉ số CH:", calinski_harabasz_index(_dt['X'], labels))
-        # if config['validity_indices']['silhouette_index']:
-        #     print("Chỉ số SI:", silhouette_index(_dt['X'], labels))
+        if config['validity_indices']['davies_bouldin_index']:
+            print("Chỉ số DB:", davies_bouldin_index(_dt['X'], labels))
+        if config['validity_indices']['separation_index']:
+            print("Chỉ số S:", separation_index(_dt['X'], U, V, m))
+        if config['validity_indices']['calinski_harabasz_index']:
+            print("Chỉ số CH:", calinski_harabasz_index(_dt['X'], labels))
+        if config['validity_indices']['silhouette_index']:
+            print("Chỉ số SI:", silhouette_index(_dt['X'], labels))
         if config['validity_indices']['partition_coefficient']:
             print("Chỉ số PC:", partition_coefficient(U))
-        # if config['validity_indices']['classification_entropy']:
-        #     print("Chỉ số CE:", classification_entropy(U))
-        # if config['validity_indices']['fuzzy_hypervolume']:
-        #     print("Chỉ số FHV:", fuzzy_hypervolume(U, m))
-        # if config['validity_indices']['cs_index']:
-        #     print("Chỉ số CS:", cs_index(_dt['X'], U, V, m))
+        if config['validity_indices']['classification_entropy']:
+            print("Chỉ số CE:", classification_entropy(U))
+        if config['validity_indices']['fuzzy_hypervolume']:
+            print("Chỉ số FHV:", fuzzy_hypervolume(U, m))
+        if config['validity_indices']['cs_index']:
+            print("Chỉ số CS:", cs_index(_dt['X'], U, V, m))
         
         #-------------------------------------------
         y_pred = labels
