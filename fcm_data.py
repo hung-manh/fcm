@@ -17,11 +17,9 @@ if __name__ == "__main__":
     maxiter = config['maxiter']
     m = config['m']
     epsilon = config['epsilon']
-    # seed = config['seed']
-    seed = 24
+    seed = config['seed']
     DATA_ID = config['data_id']  
-    # C = TEST_CASES[DATA_ID]['n_cluster']
-    C = 4
+    C = TEST_CASES[DATA_ID]['n_cluster']
     
     # ------------------------------------------
     _start_time = time.time()
