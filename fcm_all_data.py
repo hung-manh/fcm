@@ -45,7 +45,7 @@ if __name__ == "__main__":
         'Size': f"{_dt['X'].shape[0]}x{_dt['X'].shape[1]}",
         'C': C,
         'Time': round_float(time.time() - _start_time),
-        'DI': dunn_index(clusters) ,
+        'DI': dunn_index( .kljj) ,
         'DB': davies_bouldin_index(_dt['X'], labels) ,
         'PC': partition_coefficient(U) ,
         'CE': classification_entropy(U) ,
