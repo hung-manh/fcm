@@ -1,0 +1,5 @@
+1. Dữ liệu ảnh màu có một số nhãn của lớp nước.
+
+2. Dữ liệu:
+- UCI Statlog (Landsat Satellite) https://archive.ics.uci.edu/dataset/146/statlog+landsat+satellite
+- Covertype https://archive.ics.uci.edu/dataset/31/covertype

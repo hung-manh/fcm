@@ -1,0 +1,48 @@
+import numpy as np
+from utils.utils import norm_distances
+
+class SSfcm:
+    def __init__(self, m: float = 2, epsilon: float = 1e-5, maxiter: int = 10000):
+        self._m = m  # Mức độ mờ - Degree of fuzziness  
+        self._epsilon = epsilon  # Tiêu chuẩn dừng - epsilon 
+        self._maxiter = maxiter  # Maximum number of iterations
+
+    # Khởi tạo ma trận thành viên
+    @staticmethod
+    def __init_membership(N: int, C: int, seed: int = 0) -> np.ndarray:
+        if seed > 0:
+            np.random.seed(seed)
+        U0 = np.random.rand(N, C)
+        return U0 / U0.sum(axis=1)[:, None]
+
+    # Cập nhật ma trận tâm cụm
+    def update_cluster_centers(self, data: np.ndarray, membership: np.ndarray, membership_label: np.ndarray) -> np.ndarray:
+        result = (membership - membership_label) ** 2 #(N, C)
+        numerator = result.T @ data # (C, N) @ (N, D) = (C, D)
+        denominator = result.sum(axis=0)[:, np.newaxis] # (C, 1)
+        return numerator / denominator
+    
+    
+    # Cập nhật ma trận thành viên, ma trận độ thuộc 
+    def update_membership_matrix(self, distances: np.ndarray, membership_label: np.ndarray) -> np.ndarray:
+        '''
+            distances : (N, C)
+            membership_label: (N, C)
+        '''
+        sum_membership_label = np.sum(membership_label, axis=1, keepdims=True)
+        ratios = (distances[:, :, None] / distances[:, None, :]) ** 2
+        sum_ratios = np.sum(ratios, axis=2)
+        return membership_label + ((1 - sum_membership_label) / sum_ratios)
+
+    
+    def sscmeans(self, data: np.ndarray, membership_label: np.ndarray, C:int = 3, seed: int = 42) -> tuple:
+        u = self.__init_membership(len(data), C, seed)
+        for step in range(self._maxiter):
+            old_u = u.copy()
+            v = self.update_cluster_centers(data, old_u, membership_label)
+            sdistances = norm_distances(data, v) # Khoảng các Euclidean giữa các điểm dữ liệu(data) và các tâm cụm(centroids)
+            u = self.update_membership_matrix(sdistances, membership_label)
+            
+            if (np.abs(u - old_u)).max(axis=(0, 1)) < self._epsilon:
+                break
+        return u, v, step + 1
